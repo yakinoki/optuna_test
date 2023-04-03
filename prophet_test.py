@@ -25,10 +25,10 @@ def objective(trial):
     # 予測
     future = model.make_future_dataframe(periods=len(df_predict))
     forecast = model.predict(future)
-    result = forecast[['ds', 'yhat']].tail(len(df_predict))
+    result = forecast[['ds', 'yhat']].tail(0)
 
     # 評価指標
-    error = mean_absolute_error(df_predict['y'], result['yhat'])
+    error = mean_absolute_error(df_test['y'], result['yhat'])
 
     # 結果を返す
     return error
@@ -46,9 +46,10 @@ model.fit(df_test)
 future = model.make_future_dataframe(periods=len(df_predict))
 forecast = model.predict(future)
 result = forecast[['ds', 'yhat']].tail(len(df_predict))
+result_0 = forecast[['ds', 'yhat']].tail(0)
 
 # 評価指標を表示
-error = mean_absolute_error(df_predict['y'], result['yhat'])
+error = mean_absolute_error(df_test['y'], result_0['yhat'])
 print('MAE:', error)
 
 # 予測結果を出力
