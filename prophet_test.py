@@ -1,11 +1,11 @@
 import pandas as pd
 import optuna
-from fbprophet import Prophet
+from prophet import Prophet
 from sklearn.metrics import mean_absolute_error
 
 # データの読み込み
-df_test = pd.read_csv('/raw_data.csv')
-df_predict = pd.read_csv('/predict.csv')
+df_test = pd.read_csv('raw_data.csv')
+df_predict = pd.read_csv('predict.csv')
 df_test.columns = ['ds', 'y']
 
 def objective(trial):
@@ -23,9 +23,9 @@ def objective(trial):
     model.fit(df_test)
 
     # 予測
-    future = model.make_future_dataframe(periods=len(df_predict))
+    future = model.make_future_dataframe(periods=0)
     forecast = model.predict(future)
-    result = forecast[['ds', 'yhat']].tail(0)
+    result = forecast[['ds', 'yhat']].tail(len(df_test))
 
     # 評価指標
     error = mean_absolute_error(df_test['y'], result['yhat'])
@@ -35,7 +35,7 @@ def objective(trial):
 
 # ハイパーパラメータのチューニング
 study = optuna.create_study(direction='minimize')
-study.optimize(objective, n_trials=100)
+study.optimize(objective, n_trials=10)
 
 # ベストなパラメータを使って予測を実行
 best_params = study.best_trial.params
@@ -45,8 +45,8 @@ model = Prophet(changepoint_prior_scale=best_params['changepoint_prior_scale'],
 model.fit(df_test)
 future = model.make_future_dataframe(periods=len(df_predict))
 forecast = model.predict(future)
-result = forecast[['ds', 'yhat']].tail(len(df_predict))
-result_0 = forecast[['ds', 'yhat']].tail(0)
+result = forecast[['ds', 'yhat']]
+result_0 = forecast[['ds', 'yhat']].tail(len(df_test))
 
 # 評価指標を表示
 error = mean_absolute_error(df_test['y'], result_0['yhat'])
