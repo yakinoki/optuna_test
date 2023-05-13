@@ -2,6 +2,7 @@ import pandas as pd
 import optuna
 from prophet import Prophet
 from sklearn.metrics import mean_absolute_error
+import pickle
 
 # データの読み込み
 df_test = pd.read_csv('raw_data.csv')
@@ -37,6 +38,13 @@ def objective(trial):
 study = optuna.create_study(direction='minimize')
 study.optimize(objective, n_trials=10)
 
+
+with open('best_params.pkl', 'wb') as f:
+    pickle.dump(study.best_params, f)
+
+
+with open('best_params.pkl', 'rb') as f:
+    best_params = pickle.load(f)
 # ベストなパラメータを使って予測を実行
 best_params = study.best_trial.params
 model = Prophet(changepoint_prior_scale=best_params['changepoint_prior_scale'],
@@ -54,3 +62,5 @@ print('MAE:', error)
 
 # 予測結果を出力
 print(result)
+
+result.to_csv('result_predict.csv', index=False, encoding="SHIFT-JISx0213")
